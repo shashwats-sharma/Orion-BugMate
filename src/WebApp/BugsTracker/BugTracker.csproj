@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="10.1.1" />
+		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+		<PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.0.0" />
+		<PackageReference Include="Azure.Identity" Version="1.2.2" />
+		<PackageReference Include="FluentValidation" Version="10.3.6" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.11" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.11" />
+
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="5.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.11">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\BugTracker.Application\BugTracker.Application.csproj" />
+	  <ProjectReference Include="..\..\BugTracker.Infrastructure\BugTracker.Infrastructure.csproj" />
+	  <ProjectReference Include="..\..\BugTracker.Persistence\BugTracker.Persistence.csproj" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\MockBlob\Img\" />
+	</ItemGroup>
+</Project>

@@ -1,0 +1,18 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "font-awesome@5.15.4",
+      "destination": "wwwroot/lib/font-awesome/"
+    },
+    {
+      "library": "Chart.js@3.7.0",
+      "destination": "wwwroot/lib/Chart.js/"
+    },
+    {
+      "library": "chartjs-plugin-datalabels@2.0.0",
+      "destination": "wwwroot/lib/chartjs-plugin-datalabels/"
+    }
+  ]
+}

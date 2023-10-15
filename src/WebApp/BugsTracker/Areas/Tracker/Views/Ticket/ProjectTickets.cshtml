@@ -1,0 +1,221 @@
+﻿@model ApiResponse<BugTracker.Application.ViewModel.ProjectWithTicketVm>
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+
+@{
+    var data = Model.Data;
+
+}
+<partial name="../Shared/Partial/Common/_modalHolderPartial.cshtml" />
+<div class="py-4 row d-flex justify-content-around h-50">
+
+    <div class="first-row col-11 p-0">
+        <div class="first-row-header row d-flex px-3 py-2 w-100 justify-content-between">
+            <div class="research-input-wrapper d-flex justify-content-center align-items-center">
+                <form asp-action="ByProject" asp-route-projectId="@data.Id">
+                    <input type="text" name="searchString" class="table-sorter-input ml-1" placeholder="Reseach..."
+                           value="@(Model.Data.Pager.SearchText != null? Model.Data.Pager.SearchText : "")"/>
+                    <button type="submit" class="x-btn blue mx-1">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </form>
+            </div>
+            <div>
+                @if ((await AuthorizationService.AuthorizeAsync(User, "PriviledgedUserAndDemoPriviledged")).Succeeded)
+                {
+                    <a href="#" data-toggle="modal" id="project-update-btn" class="x-btn yellow">Edit Project</a>
+                }
+
+                @if ((await AuthorizationService.AuthorizeAsync(User, "CanCreateTicket")).Succeeded)
+                {
+                    <a href="#" data-toggle="modal" class="x-btn blue" id="create-ticket"> New Ticket</a>
+                }
+            </div>
+
+        </div>
+
+        <div class="table-responsive w-100">
+            <table class="table ticket-list-table">
+                <thead class="ticket-thead">
+                    <tr>
+                        <th scope="col" class="text-muted">Ticket Number</th>
+                        <th scope="col" class="text-muted">Ticket Title</th>
+                        <th scope="col" class="text-muted">Author</th>
+                        <th scope="col" class="text-muted">Priority</th>
+                        <th scope="col" class="text-muted">Type</th>
+                        <th scope="col" class="text-muted">Estimated hours</th>
+                        <th scope="col" class="text-muted">Status</th>
+                        <th scope="col" class="text-muted text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @foreach (var ticket in data.Tickets)
+                    {
+                        <tr>
+                            <td style=" text-align: center; color: black;">@ticket.TicketNumber</td>
+                            <td class="d-none ticket-id-holder">@ticket.Id</td>
+                            <td class="d-none ticket-description-data" data-description="@ticket.Description"></td>
+                            <td scope="row" class="text-purple"><a data-toggle="modal" data-target="" class="ticket-link">@ticket.Name </a></td>
+                            <td>@ticket.Author</td>
+                            <td><span class="pill @(ticket.Priority.ToLower())">@ticket.Priority</span></td>
+                            <td>@ticket.Type</td>
+                            <td class="text-center">@ticket.EstimatedAmountOfHours</td>
+                            <td class="@(ticket.Status.ToLower() == "resolved"? "text-green font-weight-bold":"")">@ticket.Status</td>
+
+                            <td class="text-center">
+                                <div class="dropdown">
+                                    <a href="#" class="dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <a class="dropdown-item update-btn" href="#" data-toggle="modal" data-target="#crupdateTicketModal">Edit</a>
+                                        @if ((await AuthorizationService.AuthorizeAsync(User, "PriviledgedUserAndDemoPriviledged")).Succeeded)
+                                        {
+                                            <a class="dropdown-item delete-btn" href="#" data-toggle="modal" data-target="#deleteTicketModal">Delete</a>
+                                        }
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                    }
+                </tbody>
+            </table>
+        </div>
+        <partial name="../Shared/Partial/Common/_pagerBarPartial.cshtml" model="data.Pager" />
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+@section scripts {
+
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script src="~/js/Tracker.js"></script>
+    <script src="~/lib/Chart.js/chart.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#sectionName").text('@(data.Name)');
+            $("#sidebar ul li.active").removeClass("active");
+
+            handleModals();
+
+        });
+
+
+        function handleModals() {
+            var projectId = '@data.Id';
+            var page = @( string.IsNullOrEmpty(Context.Request.Query["page"]) ? 1 : Context.Request.Query["page"]);
+
+
+            const createModalUrl = '/Tracker/Ticket/loadCreateModal?projectId=' + projectId + "&page=" + page;
+            const updateModalUrl = '/Tracker/Ticket/loadUpdateModal?projectId=' + projectId + "&page=" + page;
+            const deleteModalUrl = '/Tracker/Ticket/loadDeleteModal?projectId=' + projectId + "&page=" + page;
+            const updateProjectModalUrl = '/Tracker/Project/loadUpdateModal?id=' + projectId + '&fromTicket=' + true + "&page=" + page;
+            const ticketDetailsUrl = '/Tracker/Ticket/loadDetailsModal?projectId=' + projectId;
+
+            var createBtn = $("#create-ticket");
+            var updateBtns = document.querySelectorAll('.update-btn');
+            var deleteBtns = document.querySelectorAll('.delete-btn');
+            var projectUpdateBtn = $('#project-update-btn');
+            var ticketDetailsBtn = $(".ticket-link");
+
+            $(document).ajaxComplete(function () {
+                $.validator.unobtrusive.parse(document);
+            });
+            AttachModalCreateListener(createBtn, createModalUrl, true,true);
+            AttachTableModalListeners(updateBtns, updateModalUrl,false,true,true);
+            AttachTableModalListeners(deleteBtns, deleteModalUrl, true);
+            AttachTicketDetailsModalListener(ticketDetailsBtn, ticketDetailsUrl);
+            AttachProjectUpdateModalListener(projectUpdateBtn, updateProjectModalUrl, true);
+        }
+
+        function AttachCommentListener() {
+            $("#comments-holder").scrollTop($("#comments-holder")[0].scrollHeight);
+
+
+            $("#commentSubmitter").on('click', function (e) {
+                e.preventDefault();
+
+                var data = $("#comment-form").serialize();
+                $.ajax({
+                    type: "POST",
+                    url: '/Tracker/Ticket/SendComment',
+                    processData: false,
+                    data: data,
+                    contentType:'application/x-www-form-urlencoded; charset=UTF-8',
+                    datatype: "json",
+                    success: function (result) {
+                        $("#ticket-comments").html(result);
+                        AttachCommentListener()
+                    },
+                    error: function (data) {
+                        console.log(data);
+                    //    alert("There was an error trying to send your comment. If the problem persist reach out to your administrator.")
+                    }
+                });
+
+            });
+        }
+
+        function AttachTicketDetailsModalListener(button, url) {
+            $(button).on('click', function (event) {
+
+                //Get only the first instance of clicked class
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+
+                let targetId = $(this).closest("tr").find(".ticket-id-holder")[0].innerText;
+                let description = $(this).closest("tr").find(".ticket-description-data").attr("data-description");
+
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    data: { ticketId: targetId } ,
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (result) {
+                        $("#modal-holder").modal("show")
+                        $("#modal-holder").addClass("right");
+                        $('#modal-holder .modal-content').html(result);
+                        $(".modal-dialog").removeClass("modal-dialog-large");
+                        $("#ticket-description div").html(description);
+                        SetTicketDetailsTabListener();
+                        AttachCommentListener();
+                    },
+                    error: function (data) {
+                        console.log(data)
+                    }
+                });
+            })
+
+        }
+
+        function SetTicketDetailsTabListener() {
+            $(".ticket-tabs .nav-item").click(function (e) {
+                $(".ticket-tabs .nav-item .nav-link.active").removeClass("active");
+                e.currentTarget.children[0].classList.add("active");
+                var clickedTextContent = e.currentTarget.children[0].firstChild.data;
+                var targetToShow = $("#ticket-" + clickedTextContent.toLowerCase());
+                var targetsToHide = $(".tab-content");
+
+                targetsToHide.each(function () {
+                    $(this).addClass("d-none");
+                })
+
+                targetToShow.removeClass("d-none");
+            })
+
+        }
+
+    </script>
+}
