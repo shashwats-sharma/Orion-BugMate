@@ -48,8 +48,18 @@ namespace BugTracker.Areas.Tracker.Controllers
             ViewData["showOnlyCreated"] = showOnlyCreated;
             var response = await Mediator.Send(new GetTicketByUserQuery(page, searchString, showOnlyCreated, showAll));
             response.Data.Pager.SearchText = searchString != null ? searchString : "";
+            foreach(var ticket in response.Data.Tickets)
+            {
+                ticket.FormattedTicketNumber = FormatTicketNumber(ticket.TicketNumber);
+            }
             response.Data.ShowOnlyCreated = showOnlyCreated;
             return View(response.Data);
+        }
+        private static string FormatTicketNumber(int number)
+        {
+            string formattedNumber = number.ToString("D4"); // Format as a 4-digit number with leading zeros
+            string ticketNumber = "TICKET" + formattedNumber;
+            return ticketNumber;
         }
 
 

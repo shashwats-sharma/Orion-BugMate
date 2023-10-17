@@ -15,5 +15,6 @@ namespace BugTracker.Application.Features.Tickets
         public string Project { get; set; }
         public Guid ProjectId { get; set; }
         public int TicketNumber { get; set; }
+        public string FormattedTicketNumber { get; set; }
     }
 }
