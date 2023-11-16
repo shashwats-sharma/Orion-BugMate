@@ -55,7 +55,8 @@ namespace BugTracker.Areas.Identity.Controllers
                 ModelState.AddModelError("", "There was a problem trying to send your mail. If the problem persists contact an administrator.");
                 return View(model);
             }
-            return RedirectToAction("ConfirmEmail", new { email = model.Email });
+            //return RedirectToAction("ConfirmEmail", new { email = model.Email }); // This line is commented to buypass email confirmation.
+            return RedirectToAction("ConfirmEmail", new { uid = user.Id, token = token, email = model.Email });
 
         }
 
