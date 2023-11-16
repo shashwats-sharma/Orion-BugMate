@@ -79,6 +79,10 @@ namespace BugTracker.Areas.Tracker.Controllers
             ViewBag.errors = errors;
 
             var response = await Mediator.Send(new GetProjectTicketsQuery(projectId, page, searchString));
+            foreach (var ticket in response.Data.Tickets)
+            {
+                ticket.FormattedTicketNumber = FormatTicketNumber(ticket.TicketNumber);
+            }
             response.Data.Pager.SearchText = searchString != null ? searchString : "";
             return View("ProjectTickets", response);
         }
